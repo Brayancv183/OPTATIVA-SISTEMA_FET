@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>FET | Equipos Deportivos - Gestión de Inventario</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- SheetJS para exportar/importar Excel -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    /* Estilos específicos para la página de equipos */
+    .filters-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+    
+    .search-box i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 16px;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .search-box input:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+    }
+    
+    .filter-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-select {
+      padding: 12px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .filter-select:hover {
+      border-color: #10b981;
+    }
+    
+    .btn-add, .btn-import {
+      padding: 12px 24px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      border: none;
+    }
+    
+    .btn-add {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+    
+    .btn-add:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+    }
+    
+    .btn-import {
+      background: var(--card-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+    
+    .btn-import:hover {
+      border-color: #10b981;
+      color: #10b981;
+      transform: translateY(-2px);
+    }
+    
+    /* Tabla de equipos */
+    .equipos-table-container {
+      overflow-x: auto;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+    }
+    
+    .equipos-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .equipos-table th {
+      text-align: left;
+      padding: 16px 20px;
+      background: var(--hover-bg);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .equipos-table td {
+      padding: 16px 20px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .equipos-table tr:hover {
+      background: var(--hover-bg);
+    }
+    
+    .status-badge-table {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .status-active {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+    }
+    
+    .status-lowstock {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+    
+    .action-icons {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .action-icons i {
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      font-size: 18px;
+    }
+    
+    .action-icons i:hover {
+      color: #10b981;
+      transform: scale(1.1);
+    }
+    
+    .action-icons .fa-trash-alt:hover {
+      color: #ef4444;
+    }
+    
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal-container {
+      background: var(--card-bg);
+      border-radius: 28px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      border: 1px solid var(--border-color);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+    
+    .modal-overlay.active .modal-container {
+      transform: scale(1);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .modal-header h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .modal-header h2 i {
+      color: #10b981;
+      margin-right: 10px;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    
+    .modal-close:hover {
+      color: #ef4444;
+      transform: rotate(90deg);
+    }
+    
+    .modal-body {
+      padding: 28px;
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .form-field.full-width {
+      grid-column: span 2;
+    }
+    
+    .form-field label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    
+    .form-field label i {
+      color: #10b981;
+      margin-right: 6px;
+    }
+    
+    .form-field input, .form-field select, .form-field textarea {
+      padding: 12px 14px;
+      background: var(--bg-page);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+    }
+    
+    .form-field textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 20px 28px;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .btn-cancel {
+      padding: 10px 24px;
+      background: var(--hover-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-cancel:hover {
+      background: var(--border-color);
+    }
+    
+    .btn-save {
+      padding: 10px 28px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+    }
+    
+    /* Confirmación eliminar */
+    .confirm-toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 16px 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      border: 1px solid var(--border-color);
+      z-index: 1100;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+    }
+    
+    .confirm-toast.active {
+      transform: translateX(0);
+    }
+    
+    .confirm-toast p {
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+    
+    .confirm-buttons {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .confirm-buttons button {
+      padding: 8px 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    
+    .confirm-yes {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .confirm-no {
+      background: var(--hover-bg);
+      color: var(--text-secondary);
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding: 16px 0;
+    }
+    
+    .pagination-info {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    .pagination-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .page-btn {
+      padding: 8px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .page-btn:hover {
+      border-color: #10b981;
+      color: #10b981;
+    }
+    
+    .page-btn.active {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+    
+    @media (max-width: 768px) {
+      .filters-bar {
+        flex-direction: column;
+      }
+      .filter-group {
+        width: 100%;
+      }
+      .filter-select {
+        flex: 1;
+      }
+      .equipos-table th, .equipos-table td {
+        padding: 12px;
+        font-size: 12px;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-field.full-width {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <input type="checkbox" id="theme-toggle" hidden>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <i class="fas fa-futbol"></i>
+        </div>
+        <div class="logo-text">
+          <span class="logo-fet"><img src="assets/img/logo.png" alt="logo"></span>
+          <span class="logo-sub">Equipos Deportivos</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <div class="nav-category">Panel Principal</div>
+        <ul>
+          <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+        </ul>
+
+        <div class="nav-category">Gestión de Equipos</div>
+        <ul>
+          <li class="active"><a href="equipos.html"><i class="fas fa-tshirt"></i><span>Equipos Deportivos</span></a></li>
+          <li><a href="prestamos.html"><i class="fas fa-hand-holding-heart"></i><span>Préstamos de Equipos</span></a></li>
+          <li><a href="facturas.html"><i class="fas fa-file-invoice"></i><span>Registro de Facturas</span></a></li>
+          <li><a href="proveedores.html"><i class="fas fa-truck"></i><span>Proveedores</span></a></li>
+        </ul>
+
+        <div class="nav-category">Movimientos</div>
+        <ul>
+          <li><a href="entradas-salidas.html"><i class="fas fa-exchange-alt"></i><span>Entradas y Salidas</span></a></li>
+          <li><a href="alertas-stock.html"><i class="fas fa-exclamation-triangle"></i><span>Alertas de Stock</span></a></li>
+          <li><a href="solicitudes.html"><i class="fas fa-clipboard-list"></i><span>Solicitudes de Equipos</span></a></li>
+        </ul>
+
+        <div class="nav-category">Cuenta</div>
+        <ul>
+          <li><a href="perfil.html"><i class="fas fa-user-circle"></i><span>Perfil</span></a></li>
+          <li><a href="login.html" id="logout-link"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="coordinator-info">
+          <i class="fas fa-user-graduate"></i>
+          <div>
+            <p>Prof. Carlos Martínez</p>
+            <span>Coordinador de Equipos</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="page-title">
+          <h1>Lista de Equipos Deportivos</h1>
+          <p>Gestión completa de inventario de equipos deportivos</p>
+        </div>
+        <div class="header-actions">
+          <label for="theme-toggle" class="theme-switch">
+            <i class="fas fa-sun theme-icon light-icon"></i>
+            <i class="fas fa-moon theme-icon dark-icon"></i>
+            <span class="toggle-slider"></span>
+          </label>
+          <div class="profile-badge">
+            <i class="fas fa-bell"></i>
+            <a href="perfil.html" class="avatar-link">
+              <div class="avatar"><span>CM</span></div>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Filtros y búsqueda -->
+      <div class="filters-bar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Buscar por nombre, código o categoría...">
+        </div>
+        <div class="filter-group">
+          <select id="categoriaFilter" class="filter-select">
+            <option value="">Todas las categorías</option>
+            <option>Fútbol</option>
+            <option>Tenis</option>
+            <option>Baloncesto</option>
+            <option>Voleibol</option>
+            <option>Gimnasia</option>
+            <option>Boxeo</option>
+            <option>Accesorios</option>
+            <option>Gimnasio</option>
+          </select>
+          <select id="estadoFilter" class="filter-select">
+            <option value="">Todos los estados</option>
+            <option>Activo</option>
+            <option>Bajo Stock</option>
+          </select>
+          <button class="btn-import" id="exportExcelBtn">
+            <i class="fas fa-file-excel"></i> Exportar Excel
+          </button>
+          <button class="btn-add" id="newEquipoBtn">
+            <i class="fas fa-plus"></i> Nuevo Equipo
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de equipos -->
+      <div class="equipos-table-container">
+        <table class="equipos-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nombre del Equipo</th>
+              <th>Categoría</th>
+              <th>Stock</th>
+              <th>Stock Mínimo</th>
+              <th>Valor Unitario</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="equiposTableBody">
+            <!-- Los datos se cargarán dinámicamente con JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="pagination">
+        <div class="pagination-info" id="paginationInfo">
+          Mostrando 0 de 0 equipos
+        </div>
+        <div class="pagination-buttons" id="paginationButtons">
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="dashboard-footer">
+        <div class="footer-left">
+          <i class="fas fa-copyright"></i> 2025 Sistema FET - Gestión de Equipos Deportivos
+        </div>
+        <div class="footer-right">
+          <span>v2.4.0</span>
+          <span>·</span>
+          <span><i class="fas fa-shield-alt"></i> Datos en tiempo real</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Modal para Nuevo/Editar Equipo -->
+  <div id="equipoModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2><i class="fas fa-tshirt"></i> <span id="modalTitle">Nuevo Equipo</span></h2>
+        <button class="modal-close" id="closeModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="equipoForm">
+          <div class="form-grid">
+            <div class="form-field">
+              <label><i class="fas fa-tag"></i> Nombre del Equipo</label>
+              <input type="text" id="nombre" required>
+            </div>
+            <div class="form-field">
+              <label><i class="fas fa-barcode"></i> Código</label>
+              <input type="text" id="codigo" required>
+            </div>
+            <div class="form-field full-width">
+              <label><i class="fas fa-align-left"></i> Descripción</label>
+              <textarea id="descripcion" placeholder="Descripción detallada del equipo deportivo"></textarea>
+            </div>
+            <div class="form-field">
+              <label><i class="fas fa-futbol"></i> Categoría Deportiva</label>
+              <select id="categoria">
+                <option>Fútbol</option>
+                <option>Tenis</option>
+                <option>Baloncesto</option>
+                <option>Voleibol</option>
+                <option>Gimnasia</option>
+                <option>Boxeo</option>
+                <option>Accesorios</option>
+                <option>Gimnasio</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label><i class="fas fa-box"></i> Stock Mínimo</label>
+              <input type="number" id="stockMinimo" required>
+            </div>
+            <div class="form-field">
+              <label><i class="fas fa-truck"></i> Proveedor</label>
+              <input type="text" id="proveedor">
+            </div>
+            <div class="form-field">
+              <label><i class="fas fa-dollar-sign"></i> Valor Unitario</label>
+              <input type="number" id="valorUnitario" required>
+            </div>
+            <div class="form-field">
+              <label><i class="fas fa-percent"></i> IVA (%)</label>
+              <input type="number" id="iva" value="19">
+            </div>
+            <div class="form-field">
+              <label><i class="fas fa-map-marker-alt"></i> Código de Ubicación</label>
+              <input type="text" id="ubicacion" placeholder="Ej: DEP-A-01">
+            </div>
+            <div class="form-field">
+              <label><i class="fas fa-ruler"></i> Unidad de Medida</label>
+              <select id="unidadMedida">
+                <option>Unidad</option>
+                <option>Set</option>
+                <option>Par</option>
+                <option>Metro</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label><i class="fas fa-chart-line"></i> Stock Actual</label>
+              <input type="number" id="stockActual" required>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="cancelModalBtn">Cancelar</button>
+        <button class="btn-save" id="saveEquipoBtn">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de confirmación para eliminar -->
+  <div id="confirmToast" class="confirm-toast">
+    <p>¿Estás seguro de eliminar este equipo?</p>
+    <div class="confirm-buttons">
+      <button class="confirm-yes" id="confirmDeleteYes">Sí, eliminar</button>
+      <button class="confirm-no" id="confirmDeleteNo">Cancelar</button>
+    </div>
+  </div>
+
+  <script>
+    // ==================== DATA MODEL ====================
+    let equipos = [];
+    let nextId = 9; // Para nuevos IDs
+    let currentPage = 1;
+    let itemsPerPage = 8;
+    let currentDeleteId = null;
+    let editingId = null; // null = nuevo, número = editando
+
+    // Datos iniciales
+    const initialEquipos = [
+      { id: 1, codigo: "EQ-2024-001", nombre: "Balón de Fútbol Nike Premier", descripcion: "Balón oficial de fútbol de alta calidad", categoria: "Fútbol", stockActual: 25, stockMinimo: 20, proveedor: "Nike Sports Colombia", valorUnitario: 85000, iva: 19, ubicacion: "DEP-A-01", unidadMedida: "Unidad" },
+      { id: 2, codigo: "EQ-2024-015", nombre: "Raqueta de Tenis Wilson Pro Staff", descripcion: "Raqueta profesional para tenis", categoria: "Tenis", stockActual: 3, stockMinimo: 15, proveedor: "Wilson Distribuidora", valorUnitario: 420000, iva: 19, ubicacion: "DEP-B-03", unidadMedida: "Unidad" },
+      { id: 3, codigo: "EQ-2024-008", nombre: "Balón de Baloncesto Spalding", descripcion: "Balón oficial de baloncesto", categoria: "Baloncesto", stockActual: 18, stockMinimo: 15, proveedor: "Spalding Colombia", valorUnitario: 120000, iva: 19, ubicacion: "DEP-C-02", unidadMedida: "Unidad" },
+      { id: 4, codigo: "EQ-2024-020", nombre: "Red de Voleibol Profesional Mikasa", descripcion: "Red oficial para voleibol", categoria: "Voleibol", stockActual: 4, stockMinimo: 8, proveedor: "Mikasa Deportes", valorUnitario: 350000, iva: 19, ubicacion: "DEP-D-01", unidadMedida: "Unidad" },
+      { id: 5, codigo: "EQ-2024-030", nombre: "Colchoneta de Gimnasia Pro", descripcion: "Colchoneta para prácticas de gimnasia", categoria: "Gimnasia", stockActual: 6, stockMinimo: 25, proveedor: "Equipos Gimnasia Pro", valorUnitario: 180000, iva: 19, ubicacion: "DEP-E-04", unidadMedida: "Unidad" },
+      { id: 6, codigo: "EQ-2024-042", nombre: "Guantes de Boxeo Everlast 12oz", descripcion: "Guantes profesionales para boxeo", categoria: "Boxeo", stockActual: 15, stockMinimo: 12, proveedor: "Everlast Sports", valorUnitario: 280000, iva: 19, ubicacion: "DEP-F-02", unidadMedida: "Par" },
+      { id: 7, codigo: "EQ-2024-055", nombre: "Conos de Entrenamiento (Set 50)", descripcion: "Set de 50 conos para entrenamiento", categoria: "Accesorios", stockActual: 8, stockMinimo: 10, proveedor: "Deportes Universales", valorUnitario: 95000, iva: 19, ubicacion: "DEP-G-01", unidadMedida: "Set" },
+      { id: 8, codigo: "EQ-2024-067", nombre: "Pesas Mancuernas 5kg (Par)", descripcion: "Par de mancuernas de 5kg", categoria: "Gimnasio", stockActual: 30, stockMinimo: 20, proveedor: "Fitness Pro", valorUnitario: 145000, iva: 19, ubicacion: "DEP-H-03", unidadMedida: "Par" }
+    ];
+
+    // Cargar datos de localStorage o iniciales
+    function loadData() {
+      const stored = localStorage.getItem('fet_equipos');
+      if (stored) {
+        equipos = JSON.parse(stored);
+        const maxId = equipos.reduce((max, e) => Math.max(max, e.id), 0);
+        nextId = maxId + 1;
+      } else {
+        equipos = [...initialEquipos];
+        nextId = 9;
+        saveData();
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem('fet_equipos', JSON.stringify(equipos));
+    }
+
+    // Obtener estado según stock
+    function getEstado(stockActual, stockMinimo) {
+      return stockActual <= stockMinimo ? "Bajo Stock" : "Activo";
+    }
+
+    // Renderizar tabla con filtros y paginación
+    function renderTable() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const categoriaFilter = document.getElementById('categoriaFilter').value;
+      const estadoFilter = document.getElementById('estadoFilter').value;
+
+      let filtered = equipos.filter(equipo => {
+        const matchesSearch = equipo.nombre.toLowerCase().includes(searchTerm) || 
+                              equipo.codigo.toLowerCase().includes(searchTerm) ||
+                              equipo.categoria.toLowerCase().includes(searchTerm);
+        const matchesCategoria = !categoriaFilter || equipo.categoria === categoriaFilter;
+        const estado = getEstado(equipo.stockActual, equipo.stockMinimo);
+        const matchesEstado = !estadoFilter || estado === estadoFilter;
+        return matchesSearch && matchesCategoria && matchesEstado;
+      });
+
+      // Paginación
+      const totalItems = filtered.length;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+      const start = (currentPage - 1) * itemsPerPage;
+      const paginated = filtered.slice(start, start + itemsPerPage);
+
+      // Renderizar filas
+      const tbody = document.getElementById('equiposTableBody');
+      tbody.innerHTML = '';
+      paginated.forEach(equipo => {
+        const estado = getEstado(equipo.stockActual, equipo.stockMinimo);
+        const estadoClass = estado === 'Activo' ? 'status-active' : 'status-lowstock';
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${equipo.codigo}</strong></td>
+          <td>${equipo.nombre}</td>
+          <td>${equipo.categoria}</td>
+          <td>${equipo.stockActual} ${equipo.unidadMedida}</td>
+          <td>${equipo.stockMinimo} ${equipo.unidadMedida}</td>
+          <td>$${equipo.valorUnitario.toLocaleString()}</td>
+          <td><span class="status-badge-table ${estadoClass}">${estado}</span></td>
+          <td class="action-icons">
+            <i class="fas fa-edit" title="Editar" onclick="editEquipo(${equipo.id})"></i>
+            <i class="fas fa-trash-alt" title="Eliminar" onclick="confirmDelete(${equipo.id})"></i>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      // Actualizar paginación info
+      document.getElementById('paginationInfo').innerHTML = `Mostrando ${paginated.length} de ${totalItems} equipos`;
+      
+      // Renderizar botones de paginación
+      const paginationDiv = document.getElementById('paginationButtons');
+      paginationDiv.innerHTML = '';
+      if (totalPages > 1) {
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn';
+        prevBtn.innerHTML = '‹';
+        prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTable(); } };
+        paginationDiv.appendChild(prevBtn);
+        
+        for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+          const btn = document.createElement('button');
+          btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+          btn.textContent = i;
+          btn.onclick = () => { currentPage = i; renderTable(); };
+          paginationDiv.appendChild(btn);
+        }
+        
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn';
+        nextBtn.innerHTML = '›';
+        nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTable(); } };
+        paginationDiv.appendChild(nextBtn);
+      }
+    }
+
+    // Abrir modal para nuevo equipo
+    function openNewModal() {
+      editingId = null;
+      document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Nuevo Equipo';
+      document.getElementById('equipoForm').reset();
+      // Generar código automático
+      const newCode = `EQ-${new Date().getFullYear()}-${String(nextId).padStart(3,'0')}`;
+      document.getElementById('codigo').value = newCode;
+      document.getElementById('stockActual').value = 0;
+      document.getElementById('stockMinimo').value = 0;
+      document.getElementById('valorUnitario').value = 0;
+      document.getElementById('iva').value = 19;
+      document.getElementById('unidadMedida').value = 'Unidad';
+      document.getElementById('equipoModal').classList.add('active');
+    }
+
+    // Abrir modal para editar
+    function editEquipo(id) {
+      const equipo = equipos.find(e => e.id === id);
+      if (!equipo) return;
+      editingId = id;
+      document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Equipo';
+      document.getElementById('nombre').value = equipo.nombre;
+      document.getElementById('codigo').value = equipo.codigo;
+      document.getElementById('descripcion').value = equipo.descripcion || '';
+      document.getElementById('categoria').value = equipo.categoria;
+      document.getElementById('stockMinimo').value = equipo.stockMinimo;
+      document.getElementById('proveedor').value = equipo.proveedor || '';
+      document.getElementById('valorUnitario').value = equipo.valorUnitario;
+      document.getElementById('iva').value = equipo.iva || 19;
+      document.getElementById('ubicacion').value = equipo.ubicacion || '';
+      document.getElementById('unidadMedida').value = equipo.unidadMedida || 'Unidad';
+      document.getElementById('stockActual').value = equipo.stockActual;
+      document.getElementById('equipoModal').classList.add('active');
+    }
+
+    // Guardar equipo (nuevo o edición)
+    function saveEquipo() {
+      const nombre = document.getElementById('nombre').value.trim();
+      const codigo = document.getElementById('codigo').value.trim();
+      const descripcion = document.getElementById('descripcion').value;
+      const categoria = document.getElementById('categoria').value;
+      const stockMinimo = parseInt(document.getElementById('stockMinimo').value);
+      const proveedor = document.getElementById('proveedor').value;
+      const valorUnitario = parseFloat(document.getElementById('valorUnitario').value);
+      const iva = parseFloat(document.getElementById('iva').value);
+      const ubicacion = document.getElementById('ubicacion').value;
+      const unidadMedida = document.getElementById('unidadMedida').value;
+      const stockActual = parseInt(document.getElementById('stockActual').value);
+
+      if (!nombre || !codigo || isNaN(stockMinimo) || isNaN(valorUnitario) || isNaN(stockActual)) {
+        alert('Por favor complete los campos obligatorios');
+        return;
+      }
+
+      if (editingId === null) {
+        // Nuevo equipo
+        const newEquipo = {
+          id: nextId++,
+          codigo,
+          nombre,
+          descripcion,
+          categoria,
+          stockActual,
+          stockMinimo,
+          proveedor,
+          valorUnitario,
+          iva,
+          ubicacion,
+          unidadMedida
+        };
+        equipos.push(newEquipo);
+      } else {
+        // Editar existente
+        const index = equipos.findIndex(e => e.id === editingId);
+        if (index !== -1) {
+          equipos[index] = {
+            ...equipos[index],
+            codigo,
+            nombre,
+            descripcion,
+            categoria,
+            stockActual,
+            stockMinimo,
+            proveedor,
+            valorUnitario,
+            iva,
+            ubicacion,
+            unidadMedida
+          };
+        }
+      }
+      
+      saveData();
+      closeModal();
+      renderTable();
+    }
+
+    // Confirmar eliminación
+    function confirmDelete(id) {
+      currentDeleteId = id;
+      document.getElementById('confirmToast').classList.add('active');
+    }
+
+    function deleteEquipo() {
+      if (currentDeleteId !== null) {
+        equipos = equipos.filter(e => e.id !== currentDeleteId);
+        saveData();
+        renderTable();
+        closeConfirmToast();
+        currentDeleteId = null;
+      }
+    }
+
+    function closeConfirmToast() {
+      document.getElementById('confirmToast').classList.remove('active');
+    }
+
+    function closeModal() {
+      document.getElementById('equipoModal').classList.remove('active');
+      editingId = null;
+    }
+
+    // Exportar a Excel
+    function exportToExcel() {
+      const exportData = equipos.map(equipo => ({
+        'Código': equipo.codigo,
+        'Nombre del Equipo': equipo.nombre,
+        'Descripción': equipo.descripcion || '',
+        'Categoría': equipo.categoria,
+        'Stock Actual': equipo.stockActual,
+        'Stock Mínimo': equipo.stockMinimo,
+        'Proveedor': equipo.proveedor || '',
+        'Valor Unitario': equipo.valorUnitario,
+        'IVA (%)': equipo.iva || 19,
+        'Ubicación': equipo.ubicacion || '',
+        'Unidad de Medida': equipo.unidadMedida,
+        'Estado': getEstado(equipo.stockActual, equipo.stockMinimo)
+      }));
+      
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Equipos Deportivos');
+      XLSX.writeFile(wb, `equipos_fet_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    // Event listeners
+    document.getElementById('newEquipoBtn').addEventListener('click', openNewModal);
+    document.getElementById('saveEquipoBtn').addEventListener('click', saveEquipo);
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+    document.getElementById('confirmDeleteYes').addEventListener('click', deleteEquipo);
+    document.getElementById('confirmDeleteNo').addEventListener('click', closeConfirmToast);
+    document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
+    document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; renderTable(); });
+    document.getElementById('categoriaFilter').addEventListener('change', () => { currentPage = 1; renderTable(); });
+    document.getElementById('estadoFilter').addEventListener('change', () => { currentPage = 1; renderTable(); });
+
+    // Cerrar modal con ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        closeConfirmToast();
+      }
+    });
+
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('equipoModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('equipoModal')) closeModal();
+    });
+
+    // Inicializar
+    loadData();
+    renderTable();
+  </script>
+</body>
+</html>

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>FET | Alertas de Stock</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    /* Estilos específicos para la página de alertas de stock */
+    .stats-cards-alertas {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card-alerta {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s;
+    }
+    
+    .stat-card-alerta:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .stat-card-alerta .stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .stat-card-alerta .stat-label {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .stat-card-alerta .stat-sub {
+      font-size: 12px;
+      margin-top: 8px;
+      display: inline-block;
+    }
+    
+    .search-bar-alertas {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .search-input-alertas {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+    
+    .search-input-alertas i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    
+    .search-input-alertas input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .filter-group-alertas {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .filter-select-alerta {
+      padding: 10px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    
+    .alertas-table-container {
+      overflow-x: auto;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+    }
+    
+    .alertas-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .alertas-table th {
+      text-align: left;
+      padding: 16px 20px;
+      background: var(--hover-bg);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .alertas-table td {
+      padding: 16px 20px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .alertas-table tr:hover {
+      background: var(--hover-bg);
+    }
+    
+    .prioridad-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .prioridad-critica {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+    
+    .prioridad-alta {
+      background: rgba(245,158,11,0.15);
+      color: #f59e0b;
+    }
+    
+    .prioridad-media {
+      background: rgba(59,130,246,0.15);
+      color: #3b82f6;
+    }
+    
+    .prioridad-baja {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+    }
+    
+    .stock-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .stock-actual {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .stock-minimo {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .nivel-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--progress-bg);
+      border-radius: 10px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    
+    .nivel-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.3s;
+    }
+    
+    .nivel-fill.critica { background: #ef4444; width: 25%; }
+    .nivel-fill.alta { background: #f59e0b; width: 25%; }
+    .nivel-fill.media { background: #3b82f6; width: 40%; }
+    .nivel-fill.baja { background: #10b981; width: 80%; }
+    
+    .estado-alerta {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .estado-activa {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+    
+    .estado-atendida {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+    }
+    
+    .action-icons-alerta {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .action-icons-alerta i {
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      font-size: 18px;
+    }
+    
+    .action-icons-alerta i:hover {
+      color: #10b981;
+      transform: scale(1.1);
+    }
+    
+    .btn-atender {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-atender:hover {
+      background: #059669;
+      transform: scale(1.02);
+    }
+    
+    @media (max-width: 768px) {
+      .stats-cards-alertas {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      .search-bar-alertas {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input-alertas {
+        max-width: 100%;
+      }
+      .filter-group-alertas {
+        flex-wrap: wrap;
+      }
+      .alertas-table th, .alertas-table td {
+        padding: 12px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <input type="checkbox" id="theme-toggle" hidden>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <i class="fas fa-futbol"></i>
+        </div>
+        <div class="logo-text">
+          <span class="logo-fet"><img src="assets/img/logo.png" alt="logo"></span>
+          <span class="logo-sub">Equipos Deportivos</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <div class="nav-category">Panel Principal</div>
+        <ul>
+          <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+        </ul>
+
+        <div class="nav-category">Gestión de Equipos</div>
+        <ul>
+          <li><a href="equipos.html"><i class="fas fa-tshirt"></i><span>Equipos Deportivos</span></a></li>
+          <li><a href="prestamos.html"><i class="fas fa-hand-holding-heart"></i><span>Préstamos de Equipos</span></a></li>
+          <li><a href="facturas.html"><i class="fas fa-file-invoice"></i><span>Registro de Facturas</span></a></li>
+          <li><a href="proveedores.html"><i class="fas fa-truck"></i><span>Proveedores</span></a></li>
+        </ul>
+
+        <div class="nav-category">Movimientos</div>
+        <ul>
+          <li><a href="entradas-salidas.html"><i class="fas fa-exchange-alt"></i><span>Entradas y Salidas</span></a></li>
+          <li class="active"><a href="alertas-stock.html"><i class="fas fa-exclamation-triangle"></i><span>Alertas de Stock</span></a></li>
+          <li><a href="solicitudes.html"><i class="fas fa-clipboard-list"></i><span>Solicitudes de Equipos</span></a></li>
+        </ul>
+
+        <div class="nav-category">Cuenta</div>
+        <ul>
+          <li><a href="perfil.html"><i class="fas fa-user-circle"></i><span>Perfil</span></a></li>
+          <li><a href="login.html" id="logout-link"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="coordinator-info">
+          <i class="fas fa-user-graduate"></i>
+          <div>
+            <p>Prof. Carlos Martínez</p>
+            <span>Coordinador de Equipos</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="page-title">
+          <h1>Alertas de Stock de Equipos</h1>
+          <p>Monitoreo de niveles críticos de inventario de equipos deportivos</p>
+        </div>
+        <div class="header-actions">
+          <label for="theme-toggle" class="theme-switch">
+            <i class="fas fa-sun theme-icon light-icon"></i>
+            <i class="fas fa-moon theme-icon dark-icon"></i>
+            <span class="toggle-slider"></span>
+          </label>
+          <div class="profile-badge">
+            <i class="fas fa-bell"></i>
+            <a href="perfil.html" class="avatar-link">
+              <div class="avatar"><span>CM</span></div>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tarjetas de estadísticas -->
+      <div class="stats-cards-alertas">
+        <div class="stat-card-alerta">
+          <div class="stat-number">7</div>
+          <div class="stat-label">Alertas Activas</div>
+          <span class="stat-sub">Requieren atención</span>
+        </div>
+        <div class="stat-card-alerta">
+          <div class="stat-number">3</div>
+          <div class="stat-label">Críticas</div>
+          <span class="stat-sub">Stock bajo mínimo</span>
+        </div>
+        <div class="stat-card-alerta">
+          <div class="stat-number">4</div>
+          <div class="stat-label">Media/Alta</div>
+          <span class="stat-sub">Requiere monitoreo</span>
+        </div>
+        <div class="stat-card-alerta">
+          <div class="stat-number">12</div>
+          <div class="stat-label">Atendidas (Mes)</div>
+          <span class="stat-sub">Reposiciones realizadas</span>
+        </div>
+      </div>
+
+      <!-- Barra de búsqueda y filtros -->
+      <div class="search-bar-alertas">
+        <div class="search-input-alertas">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar por equipo o categoría...">
+        </div>
+        <div class="filter-group-alertas">
+          <select class="filter-select-alerta">
+            <option>Todas las prioridades</option>
+            <option>Crítica</option>
+            <option>Alta</option>
+            <option>Media</option>
+            <option>Baja</option>
+          </select>
+          <select class="filter-select-alerta">
+            <option>Todos los estados</option>
+            <option>Activa</option>
+            <option>Atendida</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabla de alertas -->
+      <div class="alertas-table-container">
+        <table class="alertas-table">
+          <thead>
+            <tr>
+              <th>Equipo</th>
+              <th>Categoría</th>
+              <th>Stock</th>
+              <th>Nivel</th>
+              <th>Prioridad</th>
+              <th>Última Alerta</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Balones de Fútbol Nike Premier</strong></td>
+              <td>Fútbol</td>
+              <td class="stock-info">
+                <span class="stock-actual">5 / 20</span>
+                <span class="stock-minimo">25% del mínimo</span>
+                <div class="nivel-bar"><div class="nivel-fill critica"></div></div>
+               </td>
+              <td>Unidades</td>
+              <td><span class="prioridad-badge prioridad-critica">🔴 Crítica</span></td>
+              <td>2024-02-18 14:30</td>
+              <td><span class="estado-alerta estado-activa">Activa</span></td>
+              <td class="action-icons-alerta">
+                <button class="btn-atender">Atender</button>
+                <i class="fas fa-chart-line" title="Historial"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Raquetas de Tenis Wilson Pro</strong></td>
+              <td>Tenis</td>
+              <td class="stock-info">
+                <span class="stock-actual">3 / 15</span>
+                <span class="stock-minimo">20% del mínimo</span>
+                <div class="nivel-bar"><div class="nivel-fill critica"></div></div>
+              </td>
+              <td>Unidades</td>
+              <td><span class="prioridad-badge prioridad-critica">🔴 Crítica</span></td>
+              <td>2024-02-18 11:20</td>
+              <td><span class="estado-alerta estado-activa">Activa</span></td>
+              <td class="action-icons-alerta">
+                <button class="btn-atender">Atender</button>
+                <i class="fas fa-chart-line"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Redes de Voleibol Profesional</strong></td>
+              <td>Voleibol</td>
+              <td class="stock-info">
+                <span class="stock-actual">2 / 8</span>
+                <span class="stock-minimo">25% del mínimo</span>
+                <div class="nivel-bar"><div class="nivel-fill alta"></div></div>
+              </td>
+              <td>Unidades</td>
+              <td><span class="prioridad-badge prioridad-alta">🟠 Alta</span></td>
+              <td>2024-02-17 16:45</td>
+              <td><span class="estado-alerta estado-activa">Activa</span></td>
+              <td class="action-icons-alerta">
+                <button class="btn-atender">Atender</button>
+                <i class="fas fa-chart-line"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Colchonetas de Gimnasia</strong></td>
+              <td>Gimnasia</td>
+              <td class="stock-info">
+                <span class="stock-actual">6 / 25</span>
+                <span class="stock-minimo">24% del mínimo</span>
+                <div class="nivel-bar"><div class="nivel-fill alta"></div></div>
+              </td>
+              <td>Unidades</td>
+              <td><span class="prioridad-badge prioridad-alta">🟠 Alta</span></td>
+              <td>2024-02-17 09:15</td>
+              <td><span class="estado-alerta estado-activa">Activa</span></td>
+              <td class="action-icons-alerta">
+                <button class="btn-atender">Atender</button>
+                <i class="fas fa-chart-line"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Conos de Entrenamiento (Set 50)</strong></td>
+              <td>Accesorios</td>
+              <td class="stock-info">
+                <span class="stock-actual">4 / 10</span>
+                <span class="stock-minimo">40% del mínimo</span>
+                <div class="nivel-bar"><div class="nivel-fill media"></div></div>
+              </td>
+              <td>Sets</td>
+              <td><span class="prioridad-badge prioridad-media">🔵 Media</span></td>
+              <td>2024-02-16 13:00</td>
+              <td><span class="estado-alerta estado-activa">Activa</span></td>
+              <td class="action-icons-alerta">
+                <button class="btn-atender">Atender</button>
+                <i class="fas fa-chart-line"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Guantes de Boxeo Everlast 12oz</strong></td>
+              <td>Boxeo</td>
+              <td class="stock-info">
+                <span class="stock-actual">8 / 12</span>
+                <span class="stock-minimo">67% del mínimo</span>
+                <div class="nivel-bar"><div class="nivel-fill media"></div></div>
+              </td>
+              <td>Pares</td>
+              <td><span class="prioridad-badge prioridad-media">🔵 Media</span></td>
+              <td>2024-02-16 10:30</td>
+              <td><span class="estado-alerta estado-activa">Activa</span></td>
+              <td class="action-icons-alerta">
+                <button class="btn-atender">Atender</button>
+                <i class="fas fa-chart-line"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Balones de Baloncesto Spalding</strong></td>
+              <td>Baloncesto</td>
+              <td class="stock-info">
+                <span class="stock-actual">12 / 15</span>
+                <span class="stock-minimo">80% del mínimo</span>
+                <div class="nivel-bar"><div class="nivel-fill baja"></div></div>
+              </td>
+              <td>Unidades</td>
+              <td><span class="prioridad-badge prioridad-baja">🟢 Baja</span></td>
+              <td>2024-02-15 15:20</td>
+              <td><span class="estado-alerta estado-atendida">Atendida</span></td>
+              <td class="action-icons-alerta">
+                <i class="fas fa-eye" title="Ver"></i>
+                <i class="fas fa-chart-line"></i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="pagination">
+        <div class="pagination-info">
+          Mostrando 7 de 7 alertas activas
+        </div>
+        <div class="pagination-buttons">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="dashboard-footer">
+        <div class="footer-left">
+          <i class="fas fa-copyright"></i> 2025 Sistema FET - Gestión de Equipos Deportivos
+        </div>
+        <div class="footer-right">
+          <span>v2.4.0</span>
+          <span>·</span>
+          <span><i class="fas fa-shield-alt"></i> Datos en tiempo real</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+</body>
+</html> 

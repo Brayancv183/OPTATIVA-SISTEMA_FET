@@ -1,0 +1,570 @@
+ <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>FET | Proveedores Deportivos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    /* Estilos específicos para la página de proveedores */
+    .stats-cards-proveedores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card-proveedor {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s;
+    }
+    
+    .stat-card-proveedor:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .stat-card-proveedor .stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .stat-card-proveedor .stat-label {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .stat-card-proveedor .stat-sub {
+      font-size: 12px;
+      color: #10b981;
+      margin-top: 8px;
+      display: inline-block;
+    }
+    
+    .search-bar-proveedores {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .search-input-proveedores {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+    
+    .search-input-proveedores i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    
+    .search-input-proveedores input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .btn-proveedor {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    
+    .btn-proveedor:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+    }
+    
+    /* Lista de proveedores estilo cards */
+    .proveedores-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .proveedor-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 20px 24px;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .proveedor-card:hover {
+      transform: translateX(4px);
+      border-color: #10b981;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .proveedor-info-principal {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex: 2;
+      min-width: 250px;
+    }
+    
+    .proveedor-icono {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #10b98120, #05966920);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .proveedor-icono i {
+      font-size: 28px;
+      color: #10b981;
+    }
+    
+    .proveedor-nombre-dir {
+      flex: 1;
+    }
+    
+    .proveedor-nombre-dir h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .proveedor-contacto {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+    
+    .proveedor-contacto span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .proveedor-contacto i {
+      font-size: 12px;
+      color: #10b981;
+    }
+    
+    .proveedor-descripcion {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    
+    .proveedor-stats {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .stat-compra {
+      text-align: right;
+    }
+    
+    .stat-compra .label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    .stat-compra .value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .stat-compra .plazo {
+      font-size: 11px;
+      color: #10b981;
+    }
+    
+    .proveedor-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .proveedor-actions i {
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      font-size: 18px;
+    }
+    
+    .proveedor-actions i:hover {
+      color: #10b981;
+      transform: scale(1.1);
+    }
+    
+    @media (max-width: 768px) {
+      .stats-cards-proveedores {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .search-bar-proveedores {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input-proveedores {
+        max-width: 100%;
+      }
+      .proveedor-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .proveedor-stats {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .proveedor-info-principal {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <input type="checkbox" id="theme-toggle" hidden>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <i class="fas fa-futbol"></i>
+        </div>
+        <div class="logo-text">
+          <span class="logo-fet"><img src="assets/img/logo.png" alt="logo"></span>
+          <span class="logo-sub">Equipos Deportivos</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <div class="nav-category">Panel Principal</div>
+        <ul>
+          <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+        </ul>
+
+        <div class="nav-category">Gestión de Equipos</div>
+        <ul>
+          <li><a href="equipos.html"><i class="fas fa-tshirt"></i><span>Equipos Deportivos</span></a></li>
+          <li><a href="prestamos.html"><i class="fas fa-hand-holding-heart"></i><span>Préstamos de Equipos</span></a></li>
+          <li><a href="facturas.html"><i class="fas fa-file-invoice"></i><span>Registro de Facturas</span></a></li>
+          <li class="active"><a href="proveedores.html"><i class="fas fa-truck"></i><span>Proveedores</span></a></li>
+        </ul>
+
+        <div class="nav-category">Movimientos</div>
+        <ul>
+          <li><a href="entradas-salidas.html"><i class="fas fa-exchange-alt"></i><span>Entradas y Salidas</span></a></li>
+          <li><a href="alertas-stock.html"><i class="fas fa-exclamation-triangle"></i><span>Alertas de Stock</span></a></li>
+          <li><a href="solicitudes.html"><i class="fas fa-clipboard-list"></i><span>Solicitudes de Equipos</span></a></li>
+        </ul>
+
+        <div class="nav-category">Cuenta</div>
+        <ul>
+          <li><a href="perfil.html"><i class="fas fa-user-circle"></i><span>Perfil</span></a></li>
+          <li><a href="login.html" id="logout-link"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="coordinator-info">
+          <i class="fas fa-user-graduate"></i>
+          <div>
+            <p>Prof. Carlos Martínez</p>
+            <span>Coordinador de Equipos</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="page-title">
+          <h1>Gestión de Proveedores Deportivos</h1>
+          <p>Administra los proveedores de equipos deportivos</p>
+        </div>
+        <div class="header-actions">
+          <label for="theme-toggle" class="theme-switch">
+            <i class="fas fa-sun theme-icon light-icon"></i>
+            <i class="fas fa-moon theme-icon dark-icon"></i>
+            <span class="toggle-slider"></span>
+          </label>
+          <div class="profile-badge">
+            <i class="fas fa-bell"></i>
+            <a href="perfil.html" class="avatar-link">
+              <div class="avatar"><span>CM</span></div>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tarjetas de estadísticas -->
+      <div class="stats-cards-proveedores">
+        <div class="stat-card-proveedor">
+          <div class="stat-number">9</div>
+          <div class="stat-label">Total Proveedores</div>
+          <span class="stat-sub">9 activos</span>
+        </div>
+        <div class="stat-card-proveedor">
+          <div class="stat-number">$160.3M</div>
+          <div class="stat-label">Compras Totales</div>
+          <span class="stat-sub">Histórico de compras</span>
+        </div>
+        <div class="stat-card-proveedor">
+          <div class="stat-number">34</div>
+          <div class="stat-label">Órdenes Activas</div>
+          <span class="stat-sub">En proceso</span>
+        </div>
+      </div>
+
+      <!-- Barra de búsqueda -->
+      <div class="search-bar-proveedores">
+        <div class="search-input-proveedores">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar por nombre, contacto o producto...">
+        </div>
+        <button class="btn-proveedor">
+          <i class="fas fa-plus"></i> Nuevo Proveedor
+        </button>
+      </div>
+
+      <!-- Lista de proveedores -->
+      <div class="proveedores-grid">
+        <!-- Proveedor 1 -->
+        <div class="proveedor-card">
+          <div class="proveedor-info-principal">
+            <div class="proveedor-icono">
+              <i class="fab fa-nintendo-switch"></i>
+            </div>
+            <div class="proveedor-nombre-dir">
+              <h3>Nike Sports Colombia</h3>
+              <div class="proveedor-contacto">
+                <span><i class="fas fa-phone"></i> (601) 234-5678</span>
+                <span><i class="fas fa-envelope"></i> ventas@nikecolombia.com</span>
+              </div>
+              <div class="proveedor-descripcion">Proveedor oficial de equipos Nike - Balones, indumentaria y accesorios deportivos de alta calidad.</div>
+            </div>
+          </div>
+          <div class="proveedor-stats">
+            <div class="stat-compra">
+              <div class="label">Total Compras</div>
+              <div class="value">$28.5M</div>
+              <div class="plazo">Plazo: 30 días</div>
+            </div>
+            <div class="proveedor-actions">
+              <i class="fas fa-edit" title="Editar"></i>
+              <i class="fas fa-file-invoice" title="Facturas"></i>
+              <i class="fas fa-chart-line" title="Historial"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proveedor 2 -->
+        <div class="proveedor-card">
+          <div class="proveedor-info-principal">
+            <div class="proveedor-icono">
+              <i class="fas fa-futbol"></i>
+            </div>
+            <div class="proveedor-nombre-dir">
+              <h3>Adidas Deportes</h3>
+              <div class="proveedor-contacto">
+                <span><i class="fas fa-phone"></i> (604) 987-6543</span>
+                <span><i class="fas fa-envelope"></i> comercial@adidasdeportes.com</span>
+              </div>
+              <div class="proveedor-descripcion">Distribuidor autorizado Adidas - Equipamiento completo para entrenamiento y competencia.</div>
+            </div>
+          </div>
+          <div class="proveedor-stats">
+            <div class="stat-compra">
+              <div class="label">Total Compras</div>
+              <div class="value">$32.4M</div>
+              <div class="plazo">Plazo: 45 días</div>
+            </div>
+            <div class="proveedor-actions">
+              <i class="fas fa-edit"></i>
+              <i class="fas fa-file-invoice"></i>
+              <i class="fas fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proveedor 3 -->
+        <div class="proveedor-card">
+          <div class="proveedor-info-principal">
+            <div class="proveedor-icono">
+              <i class="fas fa-table-tennis"></i>
+            </div>
+            <div class="proveedor-nombre-dir">
+              <h3>Wilson Distribuidora</h3>
+              <div class="proveedor-contacto">
+                <span><i class="fas fa-phone"></i> (601) 345-6789</span>
+                <span><i class="fas fa-envelope"></i> info@wilsondist.com</span>
+              </div>
+              <div class="proveedor-descripcion">Especialistas en equipos de tenis, raquetbol y bádminton. Raquetas, cuerdas y accesorios.</div>
+            </div>
+          </div>
+          <div class="proveedor-stats">
+            <div class="stat-compra">
+              <div class="label">Total Compras</div>
+              <div class="value">$18.9M</div>
+              <div class="plazo">Plazo: 30 días</div>
+            </div>
+            <div class="proveedor-actions">
+              <i class="fas fa-edit"></i>
+              <i class="fas fa-file-invoice"></i>
+              <i class="fas fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proveedor 4 -->
+        <div class="proveedor-card">
+          <div class="proveedor-info-principal">
+            <div class="proveedor-icono">
+              <i class="fas fa-basketball-ball"></i>
+            </div>
+            <div class="proveedor-nombre-dir">
+              <h3>Spalding Colombia</h3>
+              <div class="proveedor-contacto">
+                <span><i class="fas fa-phone"></i> (601) 456-7890</span>
+                <span><i class="fas fa-envelope"></i> ventas@spaldingco.com</span>
+              </div>
+              <div class="proveedor-descripcion">Proveedor oficial de balones de baloncesto, aros y accesorios para la práctica profesional.</div>
+            </div>
+          </div>
+          <div class="proveedor-stats">
+            <div class="stat-compra">
+              <div class="label">Total Compras</div>
+              <div class="value">$15.6M</div>
+              <div class="plazo">Plazo: 30 días</div>
+            </div>
+            <div class="proveedor-actions">
+              <i class="fas fa-edit"></i>
+              <i class="fas fa-file-invoice"></i>
+              <i class="fas fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proveedor 5 -->
+        <div class="proveedor-card">
+          <div class="proveedor-info-principal">
+            <div class="proveedor-icono">
+              <i class="fas fa-volleyball-ball"></i>
+            </div>
+            <div class="proveedor-nombre-dir">
+              <h3>Mikasa Deportes</h3>
+              <div class="proveedor-contacto">
+                <span><i class="fas fa-phone"></i> (601) 567-8901</span>
+                <span><i class="fas fa-envelope"></i> contacto@mikasadeportes.com</span>
+              </div>
+              <div class="proveedor-descripcion">Especialistas en equipos de voleibol profesional, redes, balones y protecciones.</div>
+            </div>
+          </div>
+          <div class="proveedor-stats">
+            <div class="stat-compra">
+              <div class="label">Total Compras</div>
+              <div class="value">$12.3M</div>
+              <div class="plazo">Plazo: 45 días</div>
+            </div>
+            <div class="proveedor-actions">
+              <i class="fas fa-edit"></i>
+              <i class="fas fa-file-invoice"></i>
+              <i class="fas fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proveedor 6 -->
+        <div class="proveedor-card">
+          <div class="proveedor-info-principal">
+            <div class="proveedor-icono">
+              <i class="fas fa-fist-raised"></i>
+            </div>
+            <div class="proveedor-nombre-dir">
+              <h3>Everlast Sports</h3>
+              <div class="proveedor-contacto">
+                <span><i class="fas fa-phone"></i> (601) 678-9012</span>
+                <span><i class="fas fa-envelope"></i> ventas@everlastsports.com</span>
+              </div>
+              <div class="proveedor-descripcion">Equipos de boxeo, artes marciales y entrenamiento funcional de alta resistencia.</div>
+            </div>
+          </div>
+          <div class="proveedor-stats">
+            <div class="stat-compra">
+              <div class="label">Total Compras</div>
+              <div class="value">$9.8M</div>
+              <div class="plazo">Plazo: 30 días</div>
+            </div>
+            <div class="proveedor-actions">
+              <i class="fas fa-edit"></i>
+              <i class="fas fa-file-invoice"></i>
+              <i class="fas fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paginación -->
+      <div class="pagination">
+        <div class="pagination-info">
+          Mostrando 6 de 9 proveedores registrados
+        </div>
+        <div class="pagination-buttons">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="dashboard-footer">
+        <div class="footer-left">
+          <i class="fas fa-copyright"></i> 2025 Sistema FET - Gestión de Equipos Deportivos
+        </div>
+        <div class="footer-right">
+          <span>v2.4.0</span>
+          <span>·</span>
+          <span><i class="fas fa-shield-alt"></i> Datos en tiempo real</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Sistema FET</title>
+
+  <link rel="stylesheet" href="login.css">
+
+  <!-- Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<div class="wrapper">
+
+  <!-- LEFT -->
+  <div class="left-panel">
+    <div class="brand-box">
+      <img src="assets/img/logo.png" alt="logo">
+      <h1>Sistema FET</h1>
+      <p>Control de inventario y préstamos deportivos</p>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+
+    <div class="card">
+
+      <h2>Iniciar sesión</h2>
+      <p class="subtitle">Accede a tu panel administrativo</p>
+
+      <!-- 🔥 FORM PREPARADO PARA BACKEND -->
+      <form action="dashboard.html" method="GET">
+
+        <div class="input-group">
+          <input type="email" name="email" required>
+          <label>Correo institucional</label>
+          <span class="focus-border"></span>
+        </div>
+
+        <div class="input-group">
+          <input type="password" name="password" required>
+          <label>Contraseña</label>
+          <span class="focus-border"></span>
+        </div>
+
+        <div class="row">
+          <label class="check">
+            <input type="checkbox">
+            <span></span>
+            Recordarme
+          </label>
+
+          <a href="#" class="link">Recuperar contraseña</a>
+        </div>
+
+        <!-- ✅ BOTÓN REAL DE ENVÍO -->
+        <button type="submit" class="btn-primary">
+          Entrar al sistema
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

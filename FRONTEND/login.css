@@ -1,0 +1,305 @@
+/* ===== RESET GENERAL ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ===== BODY ===== */
+body {
+  height: 100vh;
+  background: #020617;
+  overflow: hidden;
+}
+
+/* ===== FONDO GRID ===== */
+.bg-grid {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  /* Líneas tipo dashboard */
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+
+  background-size: 40px 40px;
+}
+
+/* ===== EFECTO GLOW ===== */
+.bg-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+
+  background: radial-gradient(circle, #22c55e, transparent 60%);
+  filter: blur(120px);
+
+  top: 20%;
+  left: 20%;
+
+  animation: float 12s infinite alternate ease-in-out;
+}
+
+/* Animación suave del glow */
+@keyframes float {
+  to {
+    transform: translate(200px, 100px);
+  }
+}
+
+/* ===== LAYOUT PRINCIPAL ===== */
+.wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* ===== PANEL IZQUIERDO ===== */
+.left-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Caja del branding */
+.brand-box {
+  max-width: 300px;
+  animation: slideIn 1s ease;
+}
+
+/* Logo */
+.logo {
+  width: 80px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 10px 20px rgba(34,197,94,0.5));
+}
+
+/* Textos branding */
+.brand-box h1 {
+  color: white;
+  margin-bottom: 10px;
+}
+
+.brand-box p {
+  color: #94a3b8;
+}
+
+/* ===== PANEL DERECHO ===== */
+.right-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== CARD LOGIN ===== */
+.card {
+  width: 380px;
+  padding: 40px;
+
+  border-radius: 20px;
+
+  /* Glassmorphism */
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(20px);
+
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+
+  animation: fadeUp 0.8s ease;
+}
+
+/* Animación entrada */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== TEXTOS ===== */
+h2 {
+  color: white;
+}
+
+.subtitle {
+  color: #94a3b8;
+  margin-bottom: 25px;
+}
+
+/* ===== INPUTS ===== */
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* Campo */
+.input-group input {
+  width: 100%;
+  padding: 14px;
+
+  background: rgba(255,255,255,0.05);
+  border: none;
+  outline: none;
+
+  border-radius: 10px;
+  color: white;
+}
+
+/* Label flotante */
+.input-group label {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+
+  color: #94a3b8;
+  font-size: 13px;
+
+  transition: 0.3s;
+}
+
+/* Efecto flotante */
+.input-group input:focus + label,
+.input-group input:valid + label {
+  top: -8px;
+  font-size: 11px;
+  background: #020617;
+  padding: 0 5px;
+}
+
+/* Línea animada */
+.focus-border {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  height: 2px;
+  width: 0;
+
+  background: #22c55e;
+  transition: 0.4s;
+}
+
+.input-group input:focus ~ .focus-border {
+  width: 100%;
+}
+
+/* ===== FILA OPCIONES ===== */
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* ===== CHECKBOX PERSONALIZADO ===== */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.check input {
+  display: none;
+}
+
+.check span {
+  width: 16px;
+  height: 16px;
+
+  border: 1px solid #64748b;
+  border-radius: 4px;
+}
+
+.check input:checked + span {
+  background: #22c55e;
+}
+
+/* ===== LINKS ===== */
+.link {
+  color: #22c55e;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* ===== BOTÓN PRINCIPAL ===== */
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+
+  border-radius: 10px;
+  border: none;
+
+  cursor: pointer;
+
+  background: linear-gradient(135deg, #22c55e, #15803d);
+  color: white;
+
+  transition: 0.3s;
+}
+
+/* Efecto hover */
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(34,197,94,0.5);
+}
+
+/* ===== DIVIDER ===== */
+.divider {
+  text-align: center;
+  margin: 20px 0;
+  color: #64748b;
+  font-size: 12px;
+  position: relative;
+}
+
+/* Líneas */
+.divider::before,
+.divider::after {
+  content: "";
+  position: absolute;
+  width: 35%;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  top: 50%;
+}
+
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+
+
+/* ===== ANIMACIÓN PANEL IZQUIERDO ===== */
+@keyframes slideIn {
+  from {
+    transform: translateX(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .left-panel {
+    display: none;
+  }
+}

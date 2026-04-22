@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>FET | Registro de Facturas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    /* Estilos específicos para la página de facturas */
+    .stats-cards-facturas {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card-factura {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s;
+    }
+    
+    .stat-card-factura:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .stat-card-factura .stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .stat-card-factura .stat-label {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .stat-card-factura .stat-sub {
+      font-size: 12px;
+      color: #10b981;
+      margin-top: 8px;
+      display: inline-block;
+    }
+    
+    .search-bar-facturas {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .search-input-facturas {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+    
+    .search-input-facturas i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    
+    .search-input-facturas input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .btn-factura {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    
+    .btn-factura:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+    }
+    
+    .facturas-table-container {
+      overflow-x: auto;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+    }
+    
+    .facturas-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .facturas-table th {
+      text-align: left;
+      padding: 16px 20px;
+      background: var(--hover-bg);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .facturas-table td {
+      padding: 16px 20px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .facturas-table tr:hover {
+      background: var(--hover-bg);
+    }
+    
+    .proveedor-info, .programa-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .proveedor-nombre {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .proveedor-productos {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    
+    .total-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .total-monto {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .total-iva {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    
+    .estado-factura {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .estado-validado {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+    }
+    
+    .estado-pendiente {
+      background: rgba(245,158,11,0.15);
+      color: #f59e0b;
+    }
+    
+    .estado-diferencias {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+    
+    .action-icons-factura {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .action-icons-factura i {
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      font-size: 18px;
+    }
+    
+    .action-icons-factura i:hover {
+      color: #10b981;
+      transform: scale(1.1);
+    }
+    
+    @media (max-width: 768px) {
+      .stats-cards-facturas {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .search-bar-facturas {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input-facturas {
+        max-width: 100%;
+      }
+      .facturas-table th, .facturas-table td {
+        padding: 12px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <input type="checkbox" id="theme-toggle" hidden>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <i class="fas fa-futbol"></i>
+        </div>
+        <div class="logo-text">
+          <span class="logo-fet"><img src="assets/img/logo.png" alt="logo"></span>
+          <span class="logo-sub">Equipos Deportivos</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <div class="nav-category">Panel Principal</div>
+        <ul>
+          <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+        </ul>
+
+        <div class="nav-category">Gestión de Equipos</div>
+        <ul>
+          <li><a href="equipos.html"><i class="fas fa-tshirt"></i><span>Equipos Deportivos</span></a></li>
+          <li><a href="prestamos.html"><i class="fas fa-hand-holding-heart"></i><span>Préstamos de Equipos</span></a></li>
+          <li class="active"><a href="facturas.html"><i class="fas fa-file-invoice"></i><span>Registro de Facturas</span></a></li>
+          <li><a href="proveedores.html"><i class="fas fa-truck"></i><span>Proveedores</span></a></li>
+        </ul>
+
+        <div class="nav-category">Movimientos</div>
+        <ul>
+          <li><a href="entradas-salidas.html"><i class="fas fa-exchange-alt"></i><span>Entradas y Salidas</span></a></li>
+          <li><a href="alertas-stock.html"><i class="fas fa-exclamation-triangle"></i><span>Alertas de Stock</span></a></li>
+          <li><a href="solicitudes.html"><i class="fas fa-clipboard-list"></i><span>Solicitudes de Equipos</span></a></li>
+        </ul>
+
+        <div class="nav-category">Cuenta</div>
+        <ul>
+          <li><a href="perfil.html"><i class="fas fa-user-circle"></i><span>Perfil</span></a></li>
+          <li><a href="login.html" id="logout-link"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="coordinator-info">
+          <i class="fas fa-user-graduate"></i>
+          <div>
+            <p>Prof. Carlos Martínez</p>
+            <span>Coordinador de Equipos</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="page-title">
+          <h1>Gestión de Facturas</h1>
+          <p>Registro y validación de facturas de proveedores</p>
+        </div>
+        <div class="header-actions">
+          <label for="theme-toggle" class="theme-switch">
+            <i class="fas fa-sun theme-icon light-icon"></i>
+            <i class="fas fa-moon theme-icon dark-icon"></i>
+            <span class="toggle-slider"></span>
+          </label>
+          <div class="profile-badge">
+            <i class="fas fa-bell"></i>
+            <a href="perfil.html" class="avatar-link">
+              <div class="avatar"><span>CM</span></div>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tarjetas de estadísticas -->
+      <div class="stats-cards-facturas">
+        <div class="stat-card-factura">
+          <div class="stat-number">$45.6M</div>
+          <div class="stat-label">Total Facturado</div>
+          <span class="stat-sub">Últimos 30 días</span>
+        </div>
+        <div class="stat-card-factura">
+          <div class="stat-number">12</div>
+          <div class="stat-label">Facturas Registradas</div>
+          <span class="stat-sub">Este trimestre</span>
+        </div>
+        <div class="stat-card-factura">
+          <div class="stat-number">4</div>
+          <div class="stat-label">Pendientes</div>
+          <span class="stat-sub">Por validar</span>
+        </div>
+      </div>
+
+      <!-- Barra de búsqueda -->
+      <div class="search-bar-facturas">
+        <div class="search-input-facturas">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar por número de factura o proveedor...">
+        </div>
+        <button class="btn-factura">
+          <i class="fas fa-plus"></i> Nueva Factura
+        </button>
+      </div>
+
+      <!-- Tabla de facturas -->
+      <div class="facturas-table-container">
+        <table class="facturas-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th>Programa</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>FAC-2024-001</strong></td>
+              <td>2024-02-15</td>
+              <td class="proveedor-info">
+                <span class="proveedor-nombre">Nike Sports Colombia</span>
+                <span class="proveedor-productos">8 productos</span>
+              </td>
+              <td class="programa-info">
+                <span>Programa de Fútbol</span>
+                <span class="proveedor-productos">Prof. Carlos Martínez</span>
+              </td>
+              <td class="total-info">
+                <span class="total-monto">$4,250,000</span>
+                <span class="total-iva">IVA: $678,571</span>
+              </td>
+              <td><span class="estado-factura estado-validado">✓ Validado</span></td>
+              <td class="action-icons-factura">
+                <i class="fas fa-eye" title="Ver detalles"></i>
+                <i class="fas fa-download" title="Descargar PDF"></i>
+                <i class="fas fa-print" title="Imprimir"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FAC-2024-002</strong></td>
+              <td>2024-02-14</td>
+              <td class="proveedor-info">
+                <span class="proveedor-nombre">Wilson Distribuidora</span>
+                <span class="proveedor-productos">6 productos</span>
+              </td>
+              <td class="programa-info">
+                <span>Programa de Tenis</span>
+                <span class="proveedor-productos">Prof. Ana Rodríguez</span>
+              </td>
+              <td class="total-info">
+                <span class="total-monto">$3,200,000</span>
+                <span class="total-iva">IVA: $510,924</span>
+              </td>
+              <td><span class="estado-factura estado-pendiente">Pendiente</span></td>
+              <td class="action-icons-factura">
+                <i class="fas fa-eye" title="Ver detalles"></i>
+                <i class="fas fa-check-circle" title="Validar"></i>
+                <i class="fas fa-edit" title="Editar"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FAC-2024-003</strong></td>
+              <td>2024-02-13</td>
+              <td class="proveedor-info">
+                <span class="proveedor-nombre">Spalding Colombia</span>
+                <span class="proveedor-productos">5 productos</span>
+              </td>
+              <td class="programa-info">
+                <span>Programa de Baloncesto</span>
+                <span class="proveedor-productos">Prof. Luis Gómez</span>
+              </td>
+              <td class="total-info">
+                <span class="total-monto">$2,160,000</span>
+                <span class="total-iva">IVA: $344,874</span>
+              </td>
+              <td><span class="estado-factura estado-diferencias">⚠ Con Diferencias</span></td>
+              <td class="action-icons-factura">
+                <i class="fas fa-eye" title="Ver detalles"></i>
+                <i class="fas fa-exclamation-triangle" title="Revisar"></i>
+                <i class="fas fa-edit" title="Editar"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FAC-2024-004</strong></td>
+              <td>2024-02-10</td>
+              <td class="proveedor-info">
+                <span class="proveedor-nombre">Mikasa Deportes</span>
+                <span class="proveedor-productos">4 productos</span>
+              </td>
+              <td class="programa-info">
+                <span>Programa de Voleibol</span>
+                <span class="proveedor-productos">Prof. Laura Fernández</span>
+              </td>
+              <td class="total-info">
+                <span class="total-monto">$1,890,000</span>
+                <span class="total-iva">IVA: $301,780</span>
+              </td>
+              <td><span class="estado-factura estado-validado">✓ Validado</span></td>
+              <td class="action-icons-factura">
+                <i class="fas fa-eye" title="Ver detalles"></i>
+                <i class="fas fa-download" title="Descargar PDF"></i>
+                <i class="fas fa-print" title="Imprimir"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FAC-2024-005</strong></td>
+              <td>2024-02-08</td>
+              <td class="proveedor-info">
+                <span class="proveedor-nombre">Everlast Sports</span>
+                <span class="proveedor-productos">3 productos</span>
+              </td>
+              <td class="programa-info">
+                <span>Programa de Boxeo</span>
+                <span class="proveedor-productos">Prof. Miguel Ruiz</span>
+              </td>
+              <td class="total-info">
+                <span class="total-monto">$980,000</span>
+                <span class="total-iva">IVA: $156,475</span>
+              </td>
+              <td><span class="estado-factura estado-pendiente">Pendiente</span></td>
+              <td class="action-icons-factura">
+                <i class="fas fa-eye" title="Ver detalles"></i>
+                <i class="fas fa-check-circle" title="Validar"></i>
+                <i class="fas fa-edit" title="Editar"></i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="pagination">
+        <div class="pagination-info">
+          Mostrando 5 de 12 facturas registradas
+        </div>
+        <div class="pagination-buttons">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="dashboard-footer">
+        <div class="footer-left">
+          <i class="fas fa-copyright"></i> 2025 Sistema FET - Gestión de Equipos Deportivos
+        </div>
+        <div class="footer-right">
+          <span>v2.4.0</span>
+          <span>·</span>
+          <span><i class="fas fa-shield-alt"></i> Datos en tiempo real</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+</body>
+</html> 

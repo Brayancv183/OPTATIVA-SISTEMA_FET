@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>FET | Solicitudes de Equipos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    /* Estilos específicos para la página de solicitudes */
+    .stats-cards-solicitudes {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card-solicitud {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s;
+    }
+    
+    .stat-card-solicitud:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .stat-card-solicitud .stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .stat-card-solicitud .stat-label {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .stat-card-solicitud .stat-sub {
+      font-size: 12px;
+      margin-top: 8px;
+      display: inline-block;
+      color: #10b981;
+    }
+    
+    /* Botón de nueva solicitud */
+    .action-buttons-row {
+      margin-bottom: 24px;
+    }
+    
+    .btn-primary-action {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+    }
+    
+    .search-bar-solicitudes {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .search-input-solicitudes {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+    
+    .search-input-solicitudes i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    
+    .search-input-solicitudes input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .filter-group-solicitudes {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .filter-select-solicitud {
+      padding: 10px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    
+    .solicitudes-table-container {
+      overflow-x: auto;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+    }
+    
+    .solicitudes-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .solicitudes-table th {
+      text-align: left;
+      padding: 16px 20px;
+      background: var(--hover-bg);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .solicitudes-table td {
+      padding: 16px 20px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .solicitudes-table tr:hover {
+      background: var(--hover-bg);
+    }
+    
+    .estado-solicitud {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .estado-pendiente {
+      background: rgba(245,158,11,0.15);
+      color: #f59e0b;
+    }
+    
+    .estado-aprobada {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+    }
+    
+    .estado-rechazada {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+    
+    .estado-proceso {
+      background: rgba(59,130,246,0.15);
+      color: #3b82f6;
+    }
+    
+    .prioridad-solicitud {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    .prioridad-alta {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+    
+    .prioridad-media {
+      background: rgba(245,158,11,0.15);
+      color: #f59e0b;
+    }
+    
+    .prioridad-baja {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+    }
+    
+    .solicitud-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .solicitud-titulo {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .solicitud-fecha {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    
+    .aprobaciones {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+    
+    .aprobacion-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .aprobacion-item i {
+      font-size: 12px;
+    }
+    
+    .aprobacion-item.aprobado i { color: #10b981; }
+    .aprobacion-item.pendiente i { color: #f59e0b; }
+    
+    .action-icons-solicitud {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .action-icons-solicitud i {
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      font-size: 18px;
+    }
+    
+    .action-icons-solicitud i:hover {
+      color: #10b981;
+      transform: scale(1.1);
+    }
+    
+    .btn-aprobar {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-aprobar:hover {
+      background: #059669;
+      transform: scale(1.02);
+    }
+    
+    .btn-rechazar {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-rechazar:hover {
+      background: #dc2626;
+      transform: scale(1.02);
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding: 16px 0;
+    }
+    
+    .pagination-info {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    .pagination-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .page-btn {
+      padding: 8px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .page-btn:hover {
+      border-color: #10b981;
+      color: #10b981;
+    }
+    
+    .page-btn.active {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+    
+    @media (max-width: 768px) {
+      .stats-cards-solicitudes {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      .action-buttons-row {
+        width: 100%;
+      }
+      .btn-primary-action {
+        width: 100%;
+        justify-content: center;
+      }
+      .search-bar-solicitudes {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input-solicitudes {
+        max-width: 100%;
+      }
+      .filter-group-solicitudes {
+        flex-wrap: wrap;
+      }
+      .solicitudes-table th, .solicitudes-table td {
+        padding: 12px;
+        font-size: 12px;
+      }
+      .action-icons-solicitud {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <input type="checkbox" id="theme-toggle" hidden>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <i class="fas fa-futbol"></i>
+        </div>
+        <div class="logo-text">
+          <span class="logo-fet"><img src="assets/img/logo.png" alt="logo"></span>
+          <span class="logo-sub">Equipos Deportivos</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <div class="nav-category">Panel Principal</div>
+        <ul>
+          <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+        </ul>
+
+        <div class="nav-category">Gestión de Equipos</div>
+        <ul>
+          <li><a href="equipos.html"><i class="fas fa-tshirt"></i><span>Equipos Deportivos</span></a></li>
+          <li><a href="prestamos.html"><i class="fas fa-hand-holding-heart"></i><span>Préstamos de Equipos</span></a></li>
+          <li><a href="facturas.html"><i class="fas fa-file-invoice"></i><span>Registro de Facturas</span></a></li>
+          <li><a href="proveedores.html"><i class="fas fa-truck"></i><span>Proveedores</span></a></li>
+        </ul>
+
+        <div class="nav-category">Movimientos</div>
+        <ul>
+          <li><a href="entradas-salidas.html"><i class="fas fa-exchange-alt"></i><span>Entradas y Salidas</span></a></li>
+          <li><a href="alertas-stock.html"><i class="fas fa-exclamation-triangle"></i><span>Alertas de Stock</span></a></li>
+          <li class="active"><a href="solicitudes.html"><i class="fas fa-clipboard-list"></i><span>Solicitudes de Equipos</span></a></li>
+        </ul>
+
+        <div class="nav-category">Cuenta</div>
+        <ul>
+          <li><a href="perfil.html"><i class="fas fa-user-circle"></i><span>Perfil</span></a></li>
+          <li><a href="login.html" id="logout-link"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="coordinator-info">
+          <i class="fas fa-user-graduate"></i>
+          <div>
+            <p>Prof. Carlos Martínez</p>
+            <span>Coordinador de Equipos</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="page-title">
+          <h1>Solicitudes de Equipos</h1>
+          <p>Formulario oficial del FET para solicitud de equipos deportivos</p>
+        </div>
+        <div class="header-actions">
+          <label for="theme-toggle" class="theme-switch">
+            <i class="fas fa-sun theme-icon light-icon"></i>
+            <i class="fas fa-moon theme-icon dark-icon"></i>
+            <span class="toggle-slider"></span>
+          </label>
+          <div class="profile-badge">
+            <i class="fas fa-bell"></i>
+            <a href="perfil.html" class="avatar-link">
+              <div class="avatar"><span>CM</span></div>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tarjetas de estadísticas -->
+      <div class="stats-cards-solicitudes">
+        <div class="stat-card-solicitud">
+          <div class="stat-number">28</div>
+          <div class="stat-label">Total Solicitudes</div>
+          <span class="stat-sub">Este mes</span>
+        </div>
+        <div class="stat-card-solicitud">
+          <div class="stat-number">5</div>
+          <div class="stat-label">Pendientes</div>
+          <span class="stat-sub">Por aprobar</span>
+        </div>
+        <div class="stat-card-solicitud">
+          <div class="stat-number">18</div>
+          <div class="stat-label">Aprobadas</div>
+          <span class="stat-sub">64% del total</span>
+        </div>
+        <div class="stat-card-solicitud">
+          <div class="stat-number">$8.4M</div>
+          <div class="stat-label">Valor Total</div>
+          <span class="stat-sub">Aprobado este mes</span>
+        </div>
+      </div>
+
+      <!-- Botón de Nueva Solicitud -->
+      <div class="action-buttons-row">
+        <button class="btn-primary-action">
+          <i class="fas fa-plus-circle"></i> Nueva Solicitud
+        </button>
+      </div>
+
+      <!-- Barra de búsqueda y filtros -->
+      <div class="search-bar-solicitudes">
+        <div class="search-input-solicitudes">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar por código, solicitante o dependencia...">
+        </div>
+        <div class="filter-group-solicitudes">
+          <select class="filter-select-solicitud">
+            <option>Todos los estados</option>
+            <option>Pendiente</option>
+            <option>Aprobada</option>
+            <option>Rechazada</option>
+            <option>En Proceso</option>
+          </select>
+          <select class="filter-select-solicitud">
+            <option>Todas las prioridades</option>
+            <option>Alta</option>
+            <option>Media</option>
+            <option>Baja</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabla de solicitudes -->
+      <div class="solicitudes-table-container">
+        <table class="solicitudes-table">
+          <thead>
+            <tr>
+              <th>Solicitud</th>
+              <th>Solicitante</th>
+              <th>Dependencia</th>
+              <th>Items</th>
+              <th>Valor</th>
+              <th>Aprobaciones</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="solicitud-info">
+                <span class="solicitud-titulo">SOL-2025-001</span>
+                <span class="solicitud-fecha">2025-01-15 - Suministros Deportivos</span>
+               </td>
+              <td>María González</td>
+              <td>Cocina Principal</td>
+              <td>3 items</td>
+              <td>$450,000</td>
+              <td class="aprobaciones">
+                <div class="aprobacion-item aprobado"><i class="fas fa-check-circle"></i> Jefe Dep. Estimado</div>
+                <div class="aprobacion-item pendiente"><i class="fas fa-clock"></i> Coordinador FET</div>
+              </td>
+              <td><span class="estado-solicitud estado-pendiente">Pendiente</span></td>
+              <td class="action-icons-solicitud">
+                <button class="btn-aprobar">Aprobar</button>
+                <button class="btn-rechazar">Rechazar</button>
+                <i class="fas fa-eye" title="Ver detalles"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="solicitud-info">
+                <span class="solicitud-titulo">SOL-2025-002</span>
+                <span class="solicitud-fecha">2025-01-14 - Equipos Especializados</span>
+                </td>
+              <td>Juan Pérez</td>
+              <td>Barismo</td>
+              <td>2 items</td>
+              <td>$1,200,000</td>
+              <td class="aprobaciones">
+                <div class="aprobacion-item aprobado"><i class="fas fa-check-circle"></i> Jefe Dep. Estimado</div>
+                <div class="aprobacion-item pendiente"><i class="fas fa-clock"></i> Coordinador FET</div>
+              </td>
+              <td><span class="estado-solicitud estado-pendiente">Pendiente</span></td>
+              <td class="action-icons-solicitud">
+                <button class="btn-aprobar">Aprobar</button>
+                <button class="btn-rechazar">Rechazar</button>
+                <i class="fas fa-eye" title="Ver detalles"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="solicitud-info">
+                <span class="solicitud-titulo">SOL-2025-003</span>
+                <span class="solicitud-fecha">2025-01-13 - Material Deportivo</span>
+                </td>
+              <td>Sofía Martín</td>
+              <td>Panadería</td>
+              <td>5 items</td>
+              <td>$280,000</td>
+              <td class="aprobaciones">
+                <div class="aprobacion-item aprobado"><i class="fas fa-check-circle"></i> Jefe Dep. Estimado</div>
+                <div class="aprobacion-item aprobado"><i class="fas fa-check-circle"></i> Coordinador FET</div>
+              </td>
+              <td><span class="estado-solicitud estado-aprobada">Aprobada</span></td>
+              <td class="action-icons-solicitud">
+                <i class="fas fa-check-double" title="Completar"></i>
+                <i class="fas fa-eye" title="Ver detalles"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="solicitud-info">
+                <span class="solicitud-titulo">SOL-2025-004</span>
+                <span class="solicitud-fecha">2025-01-12 - Utensilios Deportivos</span>
+                </td>
+              <td>Diego Herrera</td>
+              <td>Pastelería</td>
+              <td>4 items</td>
+              <td>$320,000</td>
+              <td class="aprobaciones">
+                <div class="aprobacion-item aprobado"><i class="fas fa-check-circle"></i> Jefe Dep. Estimado</div>
+                <div class="aprobacion-item pendiente"><i class="fas fa-clock"></i> Coordinador FET</div>
+              </td>
+              <td><span class="estado-solicitud estado-pendiente">Pendiente</span></td>
+              <td class="action-icons-solicitud">
+                <button class="btn-aprobar">Aprobar</button>
+                <button class="btn-rechazar">Rechazar</button>
+                <i class="fas fa-eye" title="Ver detalles"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="solicitud-info">
+                <span class="solicitud-titulo">SOL-2025-005</span>
+                <span class="solicitud-fecha">2025-01-10 - Papelería y Oficina</span>
+                </td>
+              <td>Elena Vargas</td>
+              <td>Administración</td>
+              <td>8 items</td>
+              <td>$150,000</td>
+              <td class="aprobaciones">
+                <div class="aprobacion-item aprobado"><i class="fas fa-check-circle"></i> Jefe Dep. Estimado</div>
+                <div class="aprobacion-item pendiente"><i class="fas fa-clock"></i> Coordinador FET</div>
+              </td>
+              <td><span class="estado-solicitud estado-proceso">En Proceso</span></td>
+              <td class="action-icons-solicitud">
+                <i class="fas fa-edit" title="Editar"></i>
+                <i class="fas fa-eye" title="Ver detalles"></i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="pagination">
+        <div class="pagination-info">
+          Mostrando 5 de 28 solicitudes registradas
+        </div>
+        <div class="pagination-buttons">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">4</button>
+          <button class="page-btn">5</button>
+          <button class="page-btn">6</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="dashboard-footer">
+        <div class="footer-left">
+          <i class="fas fa-copyright"></i> 2025 Sistema FET - Gestión de Equipos Deportivos
+        </div>
+        <div class="footer-right">
+          <span>v2.4.0</span>
+          <span>·</span>
+          <span><i class="fas fa-shield-alt"></i> Datos en tiempo real</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>

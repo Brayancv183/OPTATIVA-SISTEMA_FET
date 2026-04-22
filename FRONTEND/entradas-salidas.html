@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>FET | Entradas y Salidas de Productos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    /* Estilos específicos para la página de entradas y salidas */
+    .stats-cards-movimientos {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card-movimiento {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s;
+    }
+    
+    .stat-card-movimiento:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .stat-card-movimiento .stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .stat-card-movimiento .stat-label {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .stat-card-movimiento .stat-sub {
+      font-size: 12px;
+      margin-top: 8px;
+      display: inline-block;
+    }
+    
+    .stat-card-movimiento .trend-up { color: #10b981; }
+    .stat-card-movimiento .trend-down { color: #ef4444; }
+    
+    /* Botones de acción principales */
+    .action-buttons-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .btn-primary-action {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+    }
+    
+    .btn-secondary-action {
+      background: var(--card-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      padding: 12px 28px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    
+    .btn-secondary-action:hover {
+      border-color: #10b981;
+      color: #10b981;
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary-action i {
+      color: #10b981;
+    }
+    
+    .search-bar-movimientos {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .search-input-movimientos {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+    
+    .search-input-movimientos i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    
+    .search-input-movimientos input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .filter-group-movimientos {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .filter-select-movimiento {
+      padding: 10px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    
+    .movimientos-table-container {
+      overflow-x: auto;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+    }
+    
+    .movimientos-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .movimientos-table th {
+      text-align: left;
+      padding: 16px 20px;
+      background: var(--hover-bg);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .movimientos-table td {
+      padding: 16px 20px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .movimientos-table tr:hover {
+      background: var(--hover-bg);
+    }
+    
+    .tipo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .tipo-entrada {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+    }
+    
+    .tipo-salida {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+    
+    .estado-movimiento {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .estado-completada {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+    }
+    
+    .estado-pendiente {
+      background: rgba(245,158,11,0.15);
+      color: #f59e0b;
+    }
+    
+    .producto-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .producto-nombre {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .producto-codigo {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    
+    .valor-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .valor-total {
+      font-weight: 700;
+    }
+    
+    .valor-unitario {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    .action-icons-movimiento {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .action-icons-movimiento i {
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      font-size: 18px;
+    }
+    
+    .action-icons-movimiento i:hover {
+      color: #10b981;
+      transform: scale(1.1);
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding: 16px 0;
+    }
+    
+    .pagination-info {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    .pagination-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .page-btn {
+      padding: 8px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .page-btn:hover {
+      border-color: #10b981;
+      color: #10b981;
+    }
+    
+    .page-btn.active {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+    
+    @media (max-width: 768px) {
+      .stats-cards-movimientos {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      .action-buttons-row {
+        flex-direction: column;
+        width: 100%;
+      }
+      .btn-primary-action, .btn-secondary-action {
+        justify-content: center;
+      }
+      .search-bar-movimientos {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input-movimientos {
+        max-width: 100%;
+      }
+      .filter-group-movimientos {
+        flex-wrap: wrap;
+      }
+      .movimientos-table th, .movimientos-table td {
+        padding: 12px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <input type="checkbox" id="theme-toggle" hidden>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <i class="fas fa-futbol"></i>
+        </div>
+        <div class="logo-text">
+          <span class="logo-fet"><img src="assets/img/logo.png" alt="logo"></span>
+          <span class="logo-sub">Equipos Deportivos</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <div class="nav-category">Panel Principal</div>
+        <ul>
+          <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+        </ul>
+
+        <div class="nav-category">Gestión de Equipos</div>
+        <ul>
+          <li><a href="equipos.html"><i class="fas fa-tshirt"></i><span>Equipos Deportivos</span></a></li>
+          <li><a href="prestamos.html"><i class="fas fa-hand-holding-heart"></i><span>Préstamos de Equipos</span></a></li>
+          <li><a href="facturas.html"><i class="fas fa-file-invoice"></i><span>Registro de Facturas</span></a></li>
+          <li><a href="proveedores.html"><i class="fas fa-truck"></i><span>Proveedores</span></a></li>
+        </ul>
+
+        <div class="nav-category">Movimientos</div>
+        <ul>
+          <li class="active"><a href="entradas-salidas.html"><i class="fas fa-exchange-alt"></i><span>Entradas y Salidas</span></a></li>
+          <li><a href="alertas-stock.html"><i class="fas fa-exclamation-triangle"></i><span>Alertas de Stock</span></a></li>
+          <li><a href="solicitudes.html"><i class="fas fa-clipboard-list"></i><span>Solicitudes de Equipos</span></a></li>
+        </ul>
+
+        <div class="nav-category">Cuenta</div>
+        <ul>
+          <li><a href="perfil.html"><i class="fas fa-user-circle"></i><span>Perfil</span></a></li>
+          <li><a href="login.html" id="logout-link"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="coordinator-info">
+          <i class="fas fa-user-graduate"></i>
+          <div>
+            <p>Prof. Carlos Martínez</p>
+            <span>Coordinador de Equipos</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="page-title">
+          <h1>Entradas y Salidas de Productos</h1>
+          <p>Registro de movimientos de inventario con actualización automática de stock</p>
+        </div>
+        <div class="header-actions">
+          <label for="theme-toggle" class="theme-switch">
+            <i class="fas fa-sun theme-icon light-icon"></i>
+            <i class="fas fa-moon theme-icon dark-icon"></i>
+            <span class="toggle-slider"></span>
+          </label>
+          <div class="profile-badge">
+            <i class="fas fa-bell"></i>
+            <a href="perfil.html" class="avatar-link">
+              <div class="avatar"><span>CM</span></div>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tarjetas de estadísticas -->
+      <div class="stats-cards-movimientos">
+        <div class="stat-card-movimiento">
+          <div class="stat-number">8</div>
+          <div class="stat-label">Entradas Hoy</div>
+          <span class="stat-sub trend-up"><i class="fas fa-arrow-up"></i> +2 vs ayer</span>
+        </div>
+        <div class="stat-card-movimiento">
+          <div class="stat-number">15</div>
+          <div class="stat-label">Salidas Hoy</div>
+          <span class="stat-sub trend-up"><i class="fas fa-arrow-up"></i> +3 vs ayer</span>
+        </div>
+        <div class="stat-card-movimiento">
+          <div class="stat-number">$2.8M</div>
+          <div class="stat-label">Valor Entradas</div>
+          <span class="stat-sub">Esta semana</span>
+        </div>
+        <div class="stat-card-movimiento">
+          <div class="stat-number">3</div>
+          <div class="stat-label">Movimientos Pendientes</div>
+          <span class="stat-sub trend-down">Por verificar</span>
+        </div>
+      </div>
+
+      <!-- Botones de acción: Nueva Entrada y Nueva Salida -->
+      <div class="action-buttons-row">
+        <button class="btn-primary-action">
+          <i class="fas fa-plus-circle"></i> Nueva Entrada
+        </button>
+        <button class="btn-secondary-action">
+          <i class="fas fa-minus-circle"></i> Nueva Salida
+        </button>
+      </div>
+
+      <!-- Barra de búsqueda y filtros -->
+      <div class="search-bar-movimientos">
+        <div class="search-input-movimientos">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar por producto, código o usuario...">
+        </div>
+        <div class="filter-group-movimientos">
+          <select class="filter-select-movimiento">
+            <option>Todos los tipos</option>
+            <option>Entrada</option>
+            <option>Salida</option>
+          </select>
+          <select class="filter-select-movimiento">
+            <option>Todos los estados</option>
+            <option>Completada</option>
+            <option>Pendiente</option>
+          </select>
+          <select class="filter-select-movimiento">
+            <option>Últimos 7 días</option>
+            <option>Últimos 30 días</option>
+            <option>Este mes</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabla de movimientos -->
+      <div class="movimientos-table-container">
+        <table class="movimientos-table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Fecha/Hora</th>
+              <th>Usuario</th>
+              <th>Origen/Destino</th>
+              <th>Valor</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tipo-badge tipo-entrada"><i class="fas fa-sign-in-alt"></i> Entrada</span></td>
+              <td class="producto-info">
+                <span class="producto-nombre">Balones de Fútbol Nike Premier</span>
+                <span class="producto-codigo">EQ-2024-001</span>
+              </td>
+              <td>+24 Unidad</td>
+              <td>2024-02-15<br>14:30</td>
+              <td>Prof. Ana García</td>
+              <td>Nike Sports Colombia<br><span class="producto-codigo">Factura: FAC-2024-001</span></td>
+              <td class="valor-info">
+                <span class="valor-total">$2,040,000</span>
+                <span class="valor-unitario">$85,000 c/u</span>
+              </td>
+              <td><span class="estado-movimiento estado-completada">Completada</span></td>
+              <td class="action-icons-movimiento">
+                <i class="fas fa-eye" title="Ver detalles"></i>
+                <i class="fas fa-print" title="Imprimir"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="tipo-badge tipo-salida"><i class="fas fa-sign-out-alt"></i> Salida</span></td>
+              <td class="producto-info">
+                <span class="producto-nombre">Raquetas de Tenis Wilson Pro</span>
+                <span class="producto-codigo">EQ-2024-015</span>
+              </td>
+              <td>-10 Unidad</td>
+              <td>2024-02-15<br>10:45</td>
+              <td>Prof. Carlos Martínez</td>
+              <td>Cancha de Tenis<br><span class="producto-codigo">Prof. Ana Rodríguez</span></td>
+              <td class="valor-info">
+                <span class="valor-total">$4,200,000</span>
+                <span class="valor-unitario">$420,000 c/u</span>
+              </td>
+              <td><span class="estado-movimiento estado-completada">Completada</span></td>
+              <td class="action-icons-movimiento">
+                <i class="fas fa-eye"></i>
+                <i class="fas fa-print"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="tipo-badge tipo-entrada"><i class="fas fa-sign-in-alt"></i> Entrada</span></td>
+              <td class="producto-info">
+                <span class="producto-nombre">Colchonetas de Gimnasia</span>
+                <span class="producto-codigo">EQ-2024-030</span>
+              </td>
+              <td>+30 Unidad</td>
+              <td>2024-02-14<br>09:15</td>
+              <td>Prof. Luis Gómez</td>
+              <td>Equipos Gimnasia Pro<br><span class="producto-codigo">Factura: FAC-2024-007</span></td>
+              <td class="valor-info">
+                <span class="valor-total">$5,400,000</span>
+                <span class="valor-unitario">$180,000 c/u</span>
+              </td>
+              <td><span class="estado-movimiento estado-pendiente">Pendiente Verificación</span></td>
+              <td class="action-icons-movimiento">
+                <i class="fas fa-eye"></i>
+                <i class="fas fa-check-circle" title="Validar"></i>
+                <i class="fas fa-edit" title="Editar"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="tipo-badge tipo-salida"><i class="fas fa-sign-out-alt"></i> Salida</span></td>
+              <td class="producto-info">
+                <span class="producto-nombre">Guantes de Boxeo Everlast 12oz</span>
+                <span class="producto-codigo">EQ-2024-042</span>
+              </td>
+              <td>-5 Par</td>
+              <td>2024-02-13<br>16:20</td>
+              <td>Prof. Miguel Ruiz</td>
+              <td>Gimnasio de Boxeo<br><span class="producto-codigo">Préstamo estudiantil</span></td>
+              <td class="valor-info">
+                <span class="valor-total">$1,400,000</span>
+                <span class="valor-unitario">$280,000 c/u</span>
+              </td>
+              <td><span class="estado-movimiento estado-completada">Completada</span></td>
+              <td class="action-icons-movimiento">
+                <i class="fas fa-eye"></i>
+                <i class="fas fa-print"></i>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="tipo-badge tipo-entrada"><i class="fas fa-sign-in-alt"></i> Entrada</span></td>
+              <td class="producto-info">
+                <span class="producto-nombre">Conos de Entrenamiento (Set 50)</span>
+                <span class="producto-codigo">EQ-2024-055</span>
+              </td>
+              <td>+15 Set</td>
+              <td>2024-02-12<br>11:30</td>
+              <td>Prof. Laura Fernández</td>
+              <td>Deportes Universales<br><span class="producto-codigo">Factura: FAC-2024-012</span></td>
+              <td class="valor-info">
+                <span class="valor-total">$1,425,000</span>
+                <span class="valor-unitario">$95,000 c/u</span>
+              </td>
+              <td><span class="estado-movimiento estado-completada">Completada</span></td>
+              <td class="action-icons-movimiento">
+                <i class="fas fa-eye"></i>
+                <i class="fas fa-print"></i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="pagination">
+        <div class="pagination-info">
+          Mostrando 5 de 24 movimientos registrados
+        </div>
+        <div class="pagination-buttons">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">4</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="dashboard-footer">
+        <div class="footer-left">
+          <i class="fas fa-copyright"></i> 2025 Sistema FET - Gestión de Equipos Deportivos
+        </div>
+        <div class="footer-right">
+          <span>v2.4.0</span>
+          <span>·</span>
+          <span><i class="fas fa-shield-alt"></i> Datos en tiempo real</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
